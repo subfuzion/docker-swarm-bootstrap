@@ -1,19 +1,18 @@
 # Local Docker Swarm Bootstrap
 
-This gist provides a convenient way to create a local swarm for testing, evaluation,
-and demo purposes. Instead of creating a local cluster of nodes the usual way using
-virtual machines, it exploits [Docker in Docker](https://hub.docker.com/_/docker/), originally developed by Docker engineer
-and containerizer of all things, [Jérôme Petazzoni](https://twitter.com/jpetazzo).
+`swarm-bootstrap` provides a convenient way to create a local swarm for testing, evaluation,
+and demo purposes. It exploits [Docker in Docker](https://hub.docker.com/_/docker/), originally
+developed by Docker engineer and containerizer of all things, [Jérôme Petazzoni](https://twitter.com/jpetazzo).
 
-What this means is that instead of creating a bunch of virtual machine (typically using
-[Docker Machine](https://docs.docker.com/machine/overview/)), we can simply start a number of Docker engines running inside of their
-own containers on the host. This provides a very fast and lightweight way to get "nodes"
-running to form a swarm for running and testing services.
+What this means is that instead of creating a bunch of virtual machines (typically using
+[Docker Machine](https://docs.docker.com/machine/overview/)) we can simply start a number
+of Docker engines running inside of their own containers on the host. This provides a very
+fast and lightweight way to create "nodes" to form a swarm for running and testing services.
 
-However, the script isn't meant to be running on the host. Instead, it is meant to be run
-from a container that is on the same network as the rest of the containers will be running
-in to simplify things and allow accessing nodes by their names. Therefore, the first step
-in making things work will be to create a bridge network called `hostnet`.
+However, the script isn't meant to be run on the host. Instead, it is meant to be run
+from a container on the host that share the same network as the rest of the containers
+to simplify provisioning and allow nodes to be accessed using their names. Therefore, the
+first step in making things work will be to create a bridge network called `hostnet`.
 
 One of the containers will be used to host a registry service that the other containers
 will use to access any local images you build that haven't been pushed to the public Docker
@@ -34,7 +33,10 @@ $ docker network create hostnet
 
 2. Start bootstrap
 
-The bootstrap script defaults to 3 managers and 2 workers, but this can be overridden with environment variables as shown below.
+The bootstrap script defaults to 3 managers and 2 workers, but this can be overridden with
+environment variables as shown below. The container needs to use the `hostnet` network and
+needs the Docker socked to be mounted so that it can create containers on the host that will
+comprise the cluster.
 
 ```
 $ docker run -t --rm -v /var/run/docker.sock:/var/run/docker.sock --network hostnet -e MANAGERS=5 -e WORKERS=3 subfuzion/swarm-bootstrap
